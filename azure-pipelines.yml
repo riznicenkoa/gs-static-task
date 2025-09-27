@@ -1,0 +1,22 @@
+trigger:
+  branches:
+    include: [ main ]
+  paths:
+    include: [ index.html ]
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: DownloadSecureFile@1
+  name: gcpkey
+  inputs:
+    secureFile: 'key.json'
+
+- script: |
+    curl https://sdk.cloud.google.com | bash > /dev/null
+    source $HOME/.bashrc
+    gcloud auth activate-service-account --key-file $(gcpkey.secureFilePath)
+    gcloud config set project skilful-album-473417-r1
+    gsutil cp -a public-read index.html gs://mybucckett/index.html
+  displayName: Deploy index.html to GCS
